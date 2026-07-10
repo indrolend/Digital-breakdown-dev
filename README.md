@@ -34,6 +34,7 @@ Its `Publish Dev Portal` workflow builds and publishes:
 - `DigitalBreakdown-Android.apk`
 - `DigitalBreakdown-Web.zip`
 - `DigitalBreakdown-Research.zip`
+- checksums for each download
 - `build-info.json`
 - the live browser build under `/play/`
 
@@ -60,6 +61,21 @@ Then run:
 **digital-breakdown-apk → Actions → Publish Dev Portal → Run workflow**
 
 The workflow records the exact source commit in `build-info.json` and in the rolling release notes.
+
+## Stable Android updates
+
+A new debug signing key is normally generated on each clean GitHub Actions runner. Android will reject a newer APK if it is signed with a different key than the installed APK.
+
+For repeatable in-place updates, configure these Actions secrets in `digital-breakdown-apk`:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+`ANDROID_KEYSTORE_BASE64` must contain the base64-encoded bytes of one persistent Java keystore. Keep that keystore and its passwords backed up. Every future APK must use the same signing key.
+
+When all four secrets are present, `Publish Dev Portal` creates a release-signed APK. Otherwise, it falls back to a debug APK and records that state in `build-info.json`.
 
 ## Source-of-truth rule
 
