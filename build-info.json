@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "repository": "indrolend/digital-breakdown-apk",
+  "branch": "main",
+  "commit": "",
+  "shortCommit": "",
+  "builtAt": "",
+  "android": {
+    "available": false,
+    "filename": "DigitalBreakdown-Android.apk",
+    "size": 0,
+    "sha256": ""
+  },
+  "web": {
+    "available": false,
+    "filename": "DigitalBreakdown-Web.zip",
+    "size": 0,
+    "sha256": "",
+    "playPath": "./play/"
+  },
+  "research": {
+    "available": false,
+    "filename": "DigitalBreakdown-Research.zip",
+    "size": 0,
+    "sha256": ""
+  }
+}
