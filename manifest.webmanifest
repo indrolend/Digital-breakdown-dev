@@ -1,0 +1,18 @@
+{
+  "name": "Digital Breakdown Dev",
+  "short_name": "DB Dev",
+  "description": "Personal control center for Digital Breakdown development and demos.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020502",
+  "theme_color": "#07110a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
