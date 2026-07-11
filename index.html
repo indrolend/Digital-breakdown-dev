@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07110a">
-  <meta name="description" content="Personal control center for Digital Breakdown development, builds, downloads, and demos.">
+  <meta name="description" content="Play and download the latest Digital Breakdown development builds.">
   <title>Digital Breakdown Dev</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
@@ -22,108 +22,64 @@
       </div>
     </header>
 
-    <section class="panel primary-panel" aria-labelledby="quick-title">
+    <section class="panel access-panel" aria-labelledby="access-title">
       <div class="panel-heading">
-        <h2 id="quick-title">QUICK ACCESS</h2>
-        <span id="clock">--:--:--</span>
+        <h2 id="access-title">LATEST BUILD</h2>
+        <span id="manifest-status">LOADING</span>
       </div>
-      <div class="action-grid action-grid-primary">
+      <div class="build-summary">
+        <div class="progress-block">
+          <div class="progress-label">
+            <span>NATIVE PORT</span>
+            <strong id="port-progress-label">--%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true"><span id="port-progress-bar"></span></div>
+        </div>
+        <dl class="compact-state">
+          <div><dt>SOURCE</dt><dd id="source-commit">--</dd></div>
+          <div><dt>BUILT</dt><dd id="built-at">--</dd></div>
+          <div><dt>ANDROID</dt><dd id="android-size">--</dd></div>
+        </dl>
+      </div>
+      <div class="primary-actions">
         <a id="play-web" class="action action-primary" href="#">
-          <span class="action-key">01</span>
           <span>PLAY WEB</span>
           <small id="play-detail">LATEST PUBLISHED BUILD</small>
         </a>
         <a id="download-android" class="action" href="#">
-          <span class="action-key">02</span>
           <span>DOWNLOAD ANDROID</span>
-          <small id="android-detail">APK</small>
+          <small id="android-detail">LATEST APK</small>
         </a>
-        <a id="download-web" class="action" href="#">
-          <span class="action-key">03</span>
-          <span>DOWNLOAD WEB</span>
-          <small id="web-detail">ZIP</small>
-        </a>
-        <button id="refresh" class="action" type="button">
-          <span class="action-key">04</span>
-          <span>REFRESH PANEL</span>
-          <small>RELOAD BUILD STATE</small>
-        </button>
       </div>
+      <p id="device-note" class="notice">Detecting this device.</p>
     </section>
 
-    <section class="panel" aria-labelledby="build-title">
-      <div class="panel-heading">
-        <h2 id="build-title">ITERATE</h2>
-        <span>GITHUB ACTIONS</span>
-      </div>
+    <details class="panel tools-panel">
+      <summary>
+        <span>TOOLS</span>
+        <small>BUILD · DOWNLOAD · SOURCE</small>
+      </summary>
       <div class="action-grid">
-        <a id="publish-latest" class="action action-emphasis" href="#" target="_blank" rel="noreferrer">
-          <span class="action-key">A</span>
-          <span>BUILD + PUBLISH LATEST</span>
-          <small>APK · WEB · RESEARCH</small>
-        </a>
-        <a id="build-native" class="action" href="#" target="_blank" rel="noreferrer">
-          <span class="action-key">B</span>
-          <span>NATIVE ANDROID ONLY</span>
-          <small>TEST ARTIFACT</small>
-        </a>
-        <a id="build-research" class="action" href="#" target="_blank" rel="noreferrer">
-          <span class="action-key">C</span>
-          <span>RESEARCH PACKET ONLY</span>
-          <small>CODE SNAPSHOT</small>
-        </a>
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="download-title">
-      <div class="panel-heading">
-        <h2 id="download-title">MORE</h2>
-        <span>PORTAL + SOURCE</span>
-      </div>
-      <div class="action-grid">
-        <a id="download-research" class="action" href="#">
-          <span class="action-key">D</span>
-          <span>DOWNLOAD RESEARCH</span>
-          <small id="research-detail">ZIP</small>
-        </a>
-        <a id="releases" class="action" href="#" target="_blank" rel="noreferrer">
-          <span class="action-key">E</span>
-          <span>RELEASE DETAILS</span>
-          <small>CHECKSUMS + ASSETS</small>
-        </a>
-        <a id="game-repo" class="action" href="#" target="_blank" rel="noreferrer">
-          <span class="action-key">F</span>
-          <span>OPEN SOURCE</span>
-          <small>AUTHORITATIVE REPOSITORY</small>
-        </a>
-      </div>
-    </section>
-
-    <section class="panel info-panel" aria-labelledby="state-title">
-      <div class="panel-heading">
-        <h2 id="state-title">PUBLISHED STATE</h2>
-        <span id="manifest-status">LOADING</span>
+        <a id="publish-latest" class="action action-emphasis" href="#" target="_blank" rel="noreferrer"><span>PUBLISH LATEST</span><small>APK · WEB · RESEARCH</small></a>
+        <a id="build-native" class="action" href="#" target="_blank" rel="noreferrer"><span>NATIVE TEST BUILD</span><small>GITHUB ARTIFACT</small></a>
+        <a id="download-web" class="action" href="#"><span>DOWNLOAD WEB</span><small id="web-detail">OFFLINE ZIP</small></a>
+        <a id="download-research" class="action" href="#"><span>DOWNLOAD RESEARCH</span><small id="research-detail">CODE SNAPSHOT</small></a>
+        <a id="releases" class="action" href="#" target="_blank" rel="noreferrer"><span>RELEASE DETAILS</span><small>CHECKSUMS + ASSETS</small></a>
+        <a id="game-repo" class="action" href="#" target="_blank" rel="noreferrer"><span>OPEN SOURCE</span><small>AUTHORITATIVE REPOSITORY</small></a>
+        <a id="commits" class="action" href="#" target="_blank" rel="noreferrer"><span>RECENT COMMITS</span><small>MAIN HISTORY</small></a>
       </div>
       <dl class="state-grid">
-        <div><dt>SOURCE COMMIT</dt><dd id="source-commit">--</dd></div>
         <div><dt>BRANCH</dt><dd id="branch-name">--</dd></div>
-        <div><dt>BUILT</dt><dd id="built-at">--</dd></div>
-        <div><dt>ANDROID SIZE</dt><dd id="android-size">--</dd></div>
         <div><dt>WEB SIZE</dt><dd id="web-size">--</dd></div>
         <div><dt>RESEARCH SIZE</dt><dd id="research-size">--</dd></div>
-        <div><dt>CONTROL VERSION</dt><dd id="control-version">--</dd></div>
-        <div><dt>LAST REFRESH</dt><dd id="last-refresh">--</dd></div>
+        <div><dt>CONTROL</dt><dd id="control-version">--</dd></div>
+        <div><dt>LAST CHECK</dt><dd id="last-refresh">--</dd></div>
+        <div><dt>AUTO REFRESH</dt><dd>30 SEC</dd></div>
       </dl>
-      <p id="device-note" class="notice">Detecting this device.</p>
-      <p class="notice">GitHub main remains authoritative. Downloads are rolling outputs tied to the exact commit shown above.</p>
-    </section>
+    </details>
 
-    <footer>
-      <span>PERSONAL BUILD + DEMO PORTAL</span>
-      <a id="commits" href="#" target="_blank" rel="noreferrer">RECENT COMMITS</a>
-    </footer>
+    <footer><span>PERSONAL BUILD + DEMO PORTAL</span><span id="clock">--:--:--</span></footer>
   </main>
-
   <script src="./config.js"></script>
   <script src="./app.js"></script>
 </body>

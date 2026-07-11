@@ -1,5 +1,6 @@
 window.DIGITAL_BREAKDOWN_DEV_CONFIG = Object.freeze({
-  controlVersion: "0.2.0",
+  controlVersion: "0.3.0",
+  nativePortProgress: 28,
   owner: "indrolend",
   gameRepository: "digital-breakdown-apk",
   portalRepository: "Digital-breakdown-dev",
