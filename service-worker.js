@@ -1,4 +1,4 @@
-const CACHE_NAME = "digital-breakdown-dev-v3";
+const CACHE_NAME = "digital-breakdown-dev-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
