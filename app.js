@@ -9,6 +9,7 @@
 
   const $ = (id) => document.getElementById(id);
   const setHref = (id, href) => { const el = $(id); if (el) el.href = href; };
+  let currentManifest = null;
 
   function formatBytes(value) {
     if (!Number.isFinite(value) || value <= 0) return "--";
@@ -34,13 +35,13 @@
   function describeDevice() {
     const ua = navigator.userAgent;
     if (/Android/i.test(ua)) {
-      $("device-note").textContent = "Android detected. Download the latest APK, then open it to update.";
+      $("device-note").textContent = "Android detected. Download the APK to install the latest published native build.";
       $("download-android").classList.add("device-primary");
     } else if (/iPad|iPhone|iPod/i.test(ua)) {
-      $("device-note").textContent = "Use PLAY WEB, then Add to Home Screen for app-like access.";
+      $("device-note").textContent = "iOS detected. Use PLAY WEB for the current published browser build.";
       $("play-web").classList.add("device-primary");
     } else {
-      $("device-note").textContent = "Play in the browser or download the current Android APK.";
+      $("device-note").textContent = "Play the current web build immediately or download the latest Android APK.";
     }
   }
 
@@ -51,42 +52,72 @@
     el.setAttribute("aria-disabled", available ? "false" : "true");
   }
 
+  function exactSourceUrl(manifest) {
+    if (manifest?.sourceCommitUrl) return manifest.sourceCommitUrl;
+    if (manifest?.commit) return `${config.urls.repository}/commit/${manifest.commit}`;
+    return config.urls.repository;
+  }
+
+  function applyManifest(manifest) {
+    currentManifest = manifest;
+    const published = Boolean(manifest.commit);
+    const androidAvailable = Boolean(manifest.android?.available);
+    const webAvailable = Boolean(manifest.web?.available);
+
+    $("source-commit").textContent = manifest.shortCommit || manifest.commit?.slice(0, 7) || "--";
+    $("branch-name").textContent = manifest.branch || config.authoritativeBranch;
+    $("built-at").textContent = manifest.builtAt ? new Date(manifest.builtAt).toLocaleString() : "--";
+    $("android-size").textContent = formatBytes(manifest.android?.size);
+    $("web-size").textContent = formatBytes(manifest.web?.size);
+    $("research-size").textContent = formatBytes(manifest.research?.size);
+    $("run-id").textContent = manifest.runId ? String(manifest.runId) : "--";
+    $("source-message").textContent = manifest.sourceMessage || (published ? "Published build metadata loaded." : "No build has been published yet.");
+
+    setAvailability("download-android", androidAvailable);
+    setAvailability("play-web", webAvailable);
+
+    if (manifest.shortCommit) {
+      $("android-detail").textContent = `APK · ${manifest.shortCommit}`;
+      $("web-detail").textContent = `ZIP · ${manifest.shortCommit}`;
+      $("research-detail").textContent = `ZIP · ${manifest.shortCommit}`;
+      $("play-detail").textContent = `PUBLISHED ${manifest.shortCommit}`;
+      $("source-detail").textContent = manifest.shortCommit;
+      $("copy-detail").textContent = manifest.shortCommit;
+    }
+
+    setHref("open-source-commit", exactSourceUrl(manifest));
+    $("manifest-status").textContent = published ? "PUBLISHED" : "NOT PUBLISHED";
+  }
+
   async function loadManifest() {
     $("manifest-status").textContent = "CHECKING";
     try {
       const response = await fetch(`${config.manifestUrl}?t=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const manifest = await response.json();
-      const published = Boolean(manifest.commit);
-      const androidAvailable = Boolean(manifest.android?.available);
-      const webAvailable = Boolean(manifest.web?.available);
-
-      $("source-commit").textContent = manifest.shortCommit || manifest.commit?.slice(0, 7) || "--";
-      $("branch-name").textContent = manifest.branch || config.authoritativeBranch;
-      $("built-at").textContent = manifest.builtAt ? new Date(manifest.builtAt).toLocaleString() : "--";
-      $("android-size").textContent = formatBytes(manifest.android?.size);
-      $("web-size").textContent = formatBytes(manifest.web?.size);
-      $("research-size").textContent = formatBytes(manifest.research?.size);
-      setAvailability("download-android", androidAvailable);
-      setAvailability("play-web", webAvailable);
-
-      if (manifest.shortCommit) {
-        $("android-detail").textContent = `APK · ${manifest.shortCommit}`;
-        $("web-detail").textContent = `ZIP · ${manifest.shortCommit}`;
-        $("research-detail").textContent = `ZIP · ${manifest.shortCommit}`;
-        $("play-detail").textContent = `PUBLISHED ${manifest.shortCommit}`;
-      }
-      $("manifest-status").textContent = published ? "CURRENT" : "NOT PUBLISHED";
+      applyManifest(await response.json());
     } catch (error) {
       $("manifest-status").textContent = "UNAVAILABLE";
+      $("source-message").textContent = "Published build metadata could not be loaded.";
       console.warn("Build manifest unavailable:", error);
     }
     $("last-refresh").textContent = new Date().toLocaleString();
   }
 
-  const portProgress = Math.max(0, Math.min(100, Number(config.nativePortProgress) || 0));
-  $("port-progress-label").textContent = `${portProgress}%`;
-  $("port-progress-bar").style.width = `${portProgress}%`;
+  async function copyBuildId(event) {
+    event.preventDefault();
+    const value = currentManifest?.commit;
+    if (!value) {
+      $("copy-detail").textContent = "NO BUILD";
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(value);
+      $("copy-detail").textContent = "COPIED";
+      setTimeout(() => { $("copy-detail").textContent = currentManifest?.shortCommit || value.slice(0, 7); }, 1200);
+    } catch {
+      window.prompt("Build commit SHA", value);
+    }
+  }
 
   setHref("play-web", config.playWebUrl);
   setHref("download-android", config.downloads.android);
@@ -97,7 +128,9 @@
   setHref("build-native", config.urls.nativeAndroid);
   setHref("releases", config.urls.releases);
   setHref("commits", config.urls.commits);
+  setHref("open-source-commit", config.urls.repository);
 
+  $("copy-build-id").addEventListener("click", copyBuildId);
   $("branch-name").textContent = config.authoritativeBranch;
   $("control-version").textContent = config.controlVersion;
   window.addEventListener("online", updateNetworkState);
