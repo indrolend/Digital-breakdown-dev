@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07110a">
-  <meta name="description" content="Play, install, and inspect the latest published Digital Breakdown development build.">
+  <meta name="description" content="Test and inspect the latest Digital Breakdown native and reference development builds.">
   <title>Digital Breakdown Dev</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
@@ -12,63 +12,43 @@
 <body>
   <main class="shell">
     <header class="masthead">
-      <div>
-        <p class="eyebrow">DIGITAL BREAKDOWN</p>
-        <h1>DEV CONTROL</h1>
-      </div>
-      <div class="status-stack" aria-label="Connection status">
-        <span id="network-dot" class="status-dot"></span>
-        <span id="network-label">CHECKING</span>
-      </div>
+      <div><p class="eyebrow">DIGITAL BREAKDOWN</p><h1>DEV CONTROL</h1></div>
+      <div class="status-stack" aria-label="Connection status"><span id="network-dot" class="status-dot"></span><span id="network-label">CHECKING</span></div>
     </header>
 
     <section class="panel access-panel" aria-labelledby="access-title">
-      <div class="panel-heading">
-        <h2 id="access-title">PUBLISHED BUILD</h2>
-        <span id="manifest-status">LOADING</span>
-      </div>
-
+      <div class="panel-heading"><h2 id="access-title">PUBLISHED NATIVE BUILD</h2><span id="manifest-status">LOADING</span></div>
       <dl class="build-facts">
         <div><dt>SOURCE COMMIT</dt><dd id="source-commit">--</dd></div>
         <div><dt>BUILT</dt><dd id="built-at">--</dd></div>
-        <div><dt>ANDROID</dt><dd id="android-size">--</dd></div>
-        <div><dt>WEB</dt><dd id="web-size">--</dd></div>
+        <div><dt>ANDROID APK</dt><dd id="android-size">--</dd></div>
+        <div><dt>NATIVE WASM</dt><dd id="web-size">--</dd></div>
       </dl>
-
       <p id="source-message" class="source-message">Waiting for published build metadata.</p>
-
       <div class="primary-actions">
-        <a id="play-web" class="action action-primary" href="#">
-          <span>PLAY WEB</span>
-          <small id="play-detail">LATEST PUBLISHED BUILD</small>
-        </a>
-        <a id="download-android" class="action" href="#">
-          <span>DOWNLOAD ANDROID</span>
-          <small id="android-detail">LATEST APK</small>
-        </a>
+        <a id="play-web" class="action action-primary" href="#"><span>PLAY NATIVE WEB</span><small id="play-detail">C++ · WEBASSEMBLY · WEBGL</small></a>
+        <a id="download-android" class="action" href="#"><span>DOWNLOAD ANDROID</span><small id="android-detail">SAME NATIVE COMMIT</small></a>
+      </div>
+      <div class="primary-actions">
+        <a id="play-reference" class="action" href="#"><span>PLAY JS REFERENCE</span><small id="reference-detail">BEHAVIORAL AUTHORITY</small></a>
+        <a id="download-reference" class="action" href="#"><span>DOWNLOAD JS REFERENCE</span><small>OFFLINE ZIP</small></a>
       </div>
       <p id="device-note" class="notice">Detecting this device.</p>
     </section>
 
     <section class="panel" aria-labelledby="iterate-title">
-      <div class="panel-heading">
-        <h2 id="iterate-title">ITERATE</h2>
-        <span>REAL ACTIONS</span>
-      </div>
+      <div class="panel-heading"><h2 id="iterate-title">ITERATE</h2><span>REAL ACTIONS</span></div>
       <div class="action-grid">
-        <a id="publish-latest" class="action action-emphasis" href="#" target="_blank" rel="noreferrer"><span>BUILD + PUBLISH MAIN</span><small>APK · WEB · RESEARCH</small></a>
-        <a id="build-native" class="action" href="#" target="_blank" rel="noreferrer"><span>NATIVE TEST BUILD</span><small>ANDROID ARTIFACT</small></a>
+        <a id="publish-latest" class="action action-emphasis" href="#" target="_blank" rel="noreferrer"><span>BUILD + PUBLISH MAIN</span><small>APK · NATIVE WASM · REFERENCE</small></a>
+        <a id="build-native" class="action" href="#" target="_blank" rel="noreferrer"><span>NATIVE ANDROID TEST</span><small>ANDROID ARTIFACT</small></a>
         <a id="open-source-commit" class="action" href="#" target="_blank" rel="noreferrer"><span>OPEN PUBLISHED SOURCE</span><small id="source-detail">EXACT COMMIT</small></a>
       </div>
     </section>
 
     <details class="panel tools-panel">
-      <summary>
-        <span>MORE</span>
-        <small>DOWNLOADS · HISTORY · METADATA</small>
-      </summary>
+      <summary><span>MORE</span><small>DOWNLOADS · HISTORY · METADATA</small></summary>
       <div class="action-grid">
-        <a id="download-web" class="action" href="#"><span>DOWNLOAD WEB</span><small id="web-detail">OFFLINE ZIP</small></a>
+        <a id="download-web" class="action" href="#"><span>DOWNLOAD NATIVE WEB</span><small id="web-detail">WASM OFFLINE ZIP</small></a>
         <a id="download-research" class="action" href="#"><span>DOWNLOAD RESEARCH</span><small id="research-detail">CODE SNAPSHOT</small></a>
         <a id="copy-build-id" class="action" href="#"><span>COPY BUILD ID</span><small id="copy-detail">COMMIT SHA</small></a>
         <a id="releases" class="action" href="#" target="_blank" rel="noreferrer"><span>RELEASE DETAILS</span><small>CHECKSUMS + ASSETS</small></a>
@@ -85,7 +65,7 @@
       </dl>
     </details>
 
-    <footer><span>GITHUB MAIN IS SOURCE OF TRUTH · PORTAL SHOWS ONLY PUBLISHED OUTPUTS</span><span id="clock">--:--:--</span></footer>
+    <footer><span>JAVASCRIPT REFERENCE DEFINES BEHAVIOR · NATIVE C++ IS THE IMPLEMENTATION TARGET</span><span id="clock">--:--:--</span></footer>
   </main>
   <script src="./config.js"></script>
   <script src="./app.js"></script>
