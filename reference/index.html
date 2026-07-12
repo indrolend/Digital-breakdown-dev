@@ -1,0 +1,276 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <title>Digital Breakdown - Stylo Runtime</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #050505;
+      color: #d7ffd7;
+      font-family: monospace;
+      touch-action: none;
+      user-select: none;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background: #050505;
+    }
+
+    #hud {
+      position: fixed;
+      left: 10px;
+      top: 8px;
+      z-index: 20;
+      font-size: 12px;
+      line-height: 1.35;
+      color: #b7ffb7;
+      text-shadow: 0 1px 2px #000;
+      pointer-events: none;
+    }
+
+    #dpad {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      width: 154px;
+      height: 154px;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .ctrl {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border: 1px solid #9cff9c;
+      background: rgba(0, 30, 0, 0.55);
+      color: #d7ffd7;
+      font-family: monospace;
+      font-size: 16px;
+      border-radius: 0;
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    #up { left: 53px; top: 0; }
+    #down { left: 53px; top: 106px; }
+    #left { left: 0; top: 53px; }
+    #right { left: 106px; top: 53px; }
+
+    #actions {
+      position: fixed;
+      right: 18px;
+      bottom: 22px;
+      width: 170px;
+      height: 118px;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    #jump { right: 0; bottom: 58px; }
+    #vacuum { right: 58px; bottom: 0; width: 72px; }
+    #shoot { right: 0; bottom: 0; }
+
+    #status {
+      position: fixed;
+      right: 10px;
+      top: 8px;
+      z-index: 20;
+      font-size: 11px;
+      color: #d7ffd7;
+      text-align: right;
+      pointer-events: none;
+    }
+  </style>
+<script id="digital-breakdown-debug-terminal">
+(function () {
+  if (window.__DB_DEBUG_TERMINAL__) return;
+  window.__DB_DEBUG_TERMINAL__ = true;
+
+  var lines = [];
+  var box = null;
+  var maxLines = 32;
+
+  function nowStamp() {
+    var d = new Date();
+    return (
+      String(d.getHours()).padStart(2, "0") + ":" +
+      String(d.getMinutes()).padStart(2, "0") + ":" +
+      String(d.getSeconds()).padStart(2, "0")
+    );
+  }
+
+  function stringify(v) {
+    try {
+      if (v instanceof Error) return v.stack || v.message || String(v);
+      if (typeof v === "object") return JSON.stringify(v);
+      return String(v);
+    } catch (e) {
+      return String(v);
+    }
+  }
+
+  function render() {
+    if (!box) return;
+    box.textContent = lines.slice(-maxLines).join("\n");
+  }
+
+  function term() {
+    var msg = Array.prototype.slice.call(arguments).map(stringify).join(" ");
+    lines.push(nowStamp() + "  " + msg);
+    if (lines.length > 120) lines = lines.slice(-120);
+    render();
+  }
+
+  function makeBox() {
+    if (box) return;
+
+    box = document.createElement("pre");
+    box.id = "db-debug-terminal";
+    box.style.position = "fixed";
+    box.style.left = "8px";
+    box.style.right = "8px";
+    box.style.bottom = "8px";
+    box.style.maxHeight = "46vh";
+    box.style.overflow = "hidden";
+    box.style.zIndex = "999999";
+    box.style.margin = "0";
+    box.style.padding = "8px";
+    box.style.background = "rgba(0,0,0,0.82)";
+    box.style.color = "#9cff9c";
+    box.style.border = "1px solid rgba(140,255,155,0.55)";
+    box.style.font = "11px/13px monospace";
+    box.style.whiteSpace = "pre-wrap";
+    box.style.pointerEvents = "none";
+    box.textContent = "debug terminal booting...";
+    document.body.appendChild(box);
+
+    term("[DBTERM] ready");
+    term("[DBTERM] ua", navigator.userAgent);
+    term("[DBTERM] gamepads", !!navigator.getGamepads);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", makeBox);
+  } else {
+    makeBox();
+  }
+
+  var oldLog = console.log;
+  var oldWarn = console.warn;
+  var oldError = console.error;
+
+  console.log = function () {
+    term("[log]", Array.prototype.slice.call(arguments).map(stringify).join(" "));
+    oldLog.apply(console, arguments);
+  };
+
+  console.warn = function () {
+    term("[warn]", Array.prototype.slice.call(arguments).map(stringify).join(" "));
+    oldWarn.apply(console, arguments);
+  };
+
+  console.error = function () {
+    term("[error]", Array.prototype.slice.call(arguments).map(stringify).join(" "));
+    oldError.apply(console, arguments);
+  };
+
+  window.addEventListener("error", function (e) {
+    term("[window.error]", e.message, "@", e.filename + ":" + e.lineno + ":" + e.colno);
+  });
+
+  window.addEventListener("unhandledrejection", function (e) {
+    term("[promise]", e.reason && (e.reason.stack || e.reason.message || String(e.reason)));
+  });
+
+  window.addEventListener("gamepadconnected", function (e) {
+    term("[gamepadconnected]", e.gamepad.index, e.gamepad.id, "axes", e.gamepad.axes.length, "buttons", e.gamepad.buttons.length);
+  });
+
+  window.addEventListener("gamepaddisconnected", function (e) {
+    term("[gamepaddisconnected]", e.gamepad.index, e.gamepad.id);
+  });
+
+  window.addEventListener("keydown", function (e) {
+    term("[keydown]", e.code || e.key, "keyCode", e.keyCode);
+  }, true);
+
+  window.addEventListener("pointerdown", function (e) {
+    term("[pointerdown]", e.pointerType, e.clientX, e.clientY);
+  }, true);
+
+  window.DBTERM = {
+    log: term,
+    clear: function () {
+      lines = [];
+      render();
+    },
+    dumpGamepads: function () {
+      var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+      for (var i = 0; i < pads.length; i++) {
+        var p = pads[i];
+        if (!p) continue;
+
+        var axes = [];
+        for (var a = 0; a < p.axes.length; a++) {
+          axes.push(a + ":" + Number(p.axes[a] || 0).toFixed(2));
+        }
+
+        var buttons = [];
+        for (var b = 0; b < p.buttons.length; b++) {
+          var btn = p.buttons[b];
+          var value = btn ? Number(btn.value || 0) : 0;
+          var pressed = btn && btn.pressed ? "P" : "-";
+          if (pressed === "P" || Math.abs(value) > 0.05) {
+            buttons.push(b + ":" + pressed + ":" + value.toFixed(2));
+          }
+        }
+
+        term("[pad]", p.id, "axes", axes.join(" "), "buttons", buttons.join(" "));
+      }
+    }
+  };
+
+  setInterval(function () {
+    if (window.DBTERM && navigator.getGamepads) {
+      window.DBTERM.dumpGamepads();
+    }
+  }, 1000);
+})();
+</script>
+</head>
+<body>
+  <div id="hud">DIGITAL BREAKDOWN<br>STYLO RUNTIME</div>
+  <div id="status">BOOTING</div>
+
+  <div id="dpad">
+    <button class="ctrl" id="up">?</button>
+    <button class="ctrl" id="down">?</button>
+    <button class="ctrl" id="left">?</button>
+    <button class="ctrl" id="right">?</button>
+  </div>
+
+  <div id="actions">
+    <button class="ctrl" id="jump">JMP</button>
+    <button class="ctrl" id="vacuum">VAC</button>
+    <button class="ctrl" id="shoot">ATK</button>
+  </div>
+
+  <script src="./android-bundle.js"></script>
+</body>
+</html>
+

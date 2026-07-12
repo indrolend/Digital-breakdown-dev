@@ -1,276 +1,151 @@
-﻿<!doctype html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-  />
-  <title>Digital Breakdown - Stylo Runtime</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#020803">
+  <title>Digital Breakdown · Native Web</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #050505;
-      color: #d7ffd7;
-      font-family: monospace;
-      touch-action: none;
-      user-select: none;
-    }
-
-    canvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      background: #050505;
-    }
-
-    #hud {
-      position: fixed;
-      left: 10px;
-      top: 8px;
-      z-index: 20;
-      font-size: 12px;
-      line-height: 1.35;
-      color: #b7ffb7;
-      text-shadow: 0 1px 2px #000;
-      pointer-events: none;
-    }
-
-    #dpad {
-      position: fixed;
-      left: 18px;
-      bottom: 18px;
-      width: 154px;
-      height: 154px;
-      z-index: 30;
-      pointer-events: none;
-    }
-
-    .ctrl {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      border: 1px solid #9cff9c;
-      background: rgba(0, 30, 0, 0.55);
-      color: #d7ffd7;
-      font-family: monospace;
-      font-size: 16px;
-      border-radius: 0;
-      pointer-events: auto;
-      touch-action: none;
-    }
-
-    #up { left: 53px; top: 0; }
-    #down { left: 53px; top: 106px; }
-    #left { left: 0; top: 53px; }
-    #right { left: 106px; top: 53px; }
-
-    #actions {
-      position: fixed;
-      right: 18px;
-      bottom: 22px;
-      width: 170px;
-      height: 118px;
-      z-index: 30;
-      pointer-events: none;
-    }
-
-    #jump { right: 0; bottom: 58px; }
-    #vacuum { right: 58px; bottom: 0; width: 72px; }
-    #shoot { right: 0; bottom: 0; }
-
-    #status {
-      position: fixed;
-      right: 10px;
-      top: 8px;
-      z-index: 20;
-      font-size: 11px;
-      color: #d7ffd7;
-      text-align: right;
-      pointer-events: none;
-    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #020803; color: #b8ffc4; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    #status { position: fixed; top: 10px; left: 12px; z-index: 4; font-size: 11px; opacity: .85; pointer-events: none; }
+    #controls { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+    .pad, .buttons { position: absolute; bottom: max(18px, env(safe-area-inset-bottom)); pointer-events: auto; touch-action: none; }
+    .pad { left: 18px; width: 132px; height: 132px; border: 1px solid rgba(184,255,196,.35); }
+    .stick { position: absolute; width: 42px; height: 42px; left: 45px; top: 45px; border: 1px solid rgba(184,255,196,.8); background: rgba(184,255,196,.1); }
+    .buttons { right: 18px; display: grid; grid-template-columns: repeat(3, 54px); gap: 8px; }
+    button { height: 48px; border-radius: 0; border: 1px solid rgba(184,255,196,.55); background: rgba(2,8,3,.72); color: #b8ffc4; font: inherit; }
+    button.active { background: rgba(184,255,196,.22); }
+    @media (pointer:fine) { .pad, .buttons { opacity: .45; } }
   </style>
-<script id="digital-breakdown-debug-terminal">
-(function () {
-  if (window.__DB_DEBUG_TERMINAL__) return;
-  window.__DB_DEBUG_TERMINAL__ = true;
-
-  var lines = [];
-  var box = null;
-  var maxLines = 32;
-
-  function nowStamp() {
-    var d = new Date();
-    return (
-      String(d.getHours()).padStart(2, "0") + ":" +
-      String(d.getMinutes()).padStart(2, "0") + ":" +
-      String(d.getSeconds()).padStart(2, "0")
-    );
-  }
-
-  function stringify(v) {
-    try {
-      if (v instanceof Error) return v.stack || v.message || String(v);
-      if (typeof v === "object") return JSON.stringify(v);
-      return String(v);
-    } catch (e) {
-      return String(v);
-    }
-  }
-
-  function render() {
-    if (!box) return;
-    box.textContent = lines.slice(-maxLines).join("\n");
-  }
-
-  function term() {
-    var msg = Array.prototype.slice.call(arguments).map(stringify).join(" ");
-    lines.push(nowStamp() + "  " + msg);
-    if (lines.length > 120) lines = lines.slice(-120);
-    render();
-  }
-
-  function makeBox() {
-    if (box) return;
-
-    box = document.createElement("pre");
-    box.id = "db-debug-terminal";
-    box.style.position = "fixed";
-    box.style.left = "8px";
-    box.style.right = "8px";
-    box.style.bottom = "8px";
-    box.style.maxHeight = "46vh";
-    box.style.overflow = "hidden";
-    box.style.zIndex = "999999";
-    box.style.margin = "0";
-    box.style.padding = "8px";
-    box.style.background = "rgba(0,0,0,0.82)";
-    box.style.color = "#9cff9c";
-    box.style.border = "1px solid rgba(140,255,155,0.55)";
-    box.style.font = "11px/13px monospace";
-    box.style.whiteSpace = "pre-wrap";
-    box.style.pointerEvents = "none";
-    box.textContent = "debug terminal booting...";
-    document.body.appendChild(box);
-
-    term("[DBTERM] ready");
-    term("[DBTERM] ua", navigator.userAgent);
-    term("[DBTERM] gamepads", !!navigator.getGamepads);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", makeBox);
-  } else {
-    makeBox();
-  }
-
-  var oldLog = console.log;
-  var oldWarn = console.warn;
-  var oldError = console.error;
-
-  console.log = function () {
-    term("[log]", Array.prototype.slice.call(arguments).map(stringify).join(" "));
-    oldLog.apply(console, arguments);
-  };
-
-  console.warn = function () {
-    term("[warn]", Array.prototype.slice.call(arguments).map(stringify).join(" "));
-    oldWarn.apply(console, arguments);
-  };
-
-  console.error = function () {
-    term("[error]", Array.prototype.slice.call(arguments).map(stringify).join(" "));
-    oldError.apply(console, arguments);
-  };
-
-  window.addEventListener("error", function (e) {
-    term("[window.error]", e.message, "@", e.filename + ":" + e.lineno + ":" + e.colno);
-  });
-
-  window.addEventListener("unhandledrejection", function (e) {
-    term("[promise]", e.reason && (e.reason.stack || e.reason.message || String(e.reason)));
-  });
-
-  window.addEventListener("gamepadconnected", function (e) {
-    term("[gamepadconnected]", e.gamepad.index, e.gamepad.id, "axes", e.gamepad.axes.length, "buttons", e.gamepad.buttons.length);
-  });
-
-  window.addEventListener("gamepaddisconnected", function (e) {
-    term("[gamepaddisconnected]", e.gamepad.index, e.gamepad.id);
-  });
-
-  window.addEventListener("keydown", function (e) {
-    term("[keydown]", e.code || e.key, "keyCode", e.keyCode);
-  }, true);
-
-  window.addEventListener("pointerdown", function (e) {
-    term("[pointerdown]", e.pointerType, e.clientX, e.clientY);
-  }, true);
-
-  window.DBTERM = {
-    log: term,
-    clear: function () {
-      lines = [];
-      render();
-    },
-    dumpGamepads: function () {
-      var pads = navigator.getGamepads ? navigator.getGamepads() : [];
-      for (var i = 0; i < pads.length; i++) {
-        var p = pads[i];
-        if (!p) continue;
-
-        var axes = [];
-        for (var a = 0; a < p.axes.length; a++) {
-          axes.push(a + ":" + Number(p.axes[a] || 0).toFixed(2));
-        }
-
-        var buttons = [];
-        for (var b = 0; b < p.buttons.length; b++) {
-          var btn = p.buttons[b];
-          var value = btn ? Number(btn.value || 0) : 0;
-          var pressed = btn && btn.pressed ? "P" : "-";
-          if (pressed === "P" || Math.abs(value) > 0.05) {
-            buttons.push(b + ":" + pressed + ":" + value.toFixed(2));
-          }
-        }
-
-        term("[pad]", p.id, "axes", axes.join(" "), "buttons", buttons.join(" "));
-      }
-    }
-  };
-
-  setInterval(function () {
-    if (window.DBTERM && navigator.getGamepads) {
-      window.DBTERM.dumpGamepads();
-    }
-  }, 1000);
-})();
-</script>
 </head>
 <body>
-  <div id="hud">DIGITAL BREAKDOWN<br>STYLO RUNTIME</div>
-  <div id="status">BOOTING</div>
-
-  <div id="dpad">
-    <button class="ctrl" id="up">?</button>
-    <button class="ctrl" id="down">?</button>
-    <button class="ctrl" id="left">?</button>
-    <button class="ctrl" id="right">?</button>
+  <canvas id="canvas" tabindex="0" aria-label="Digital Breakdown native runtime"></canvas>
+  <div id="status">LOADING NATIVE C++ RUNTIME</div>
+  <div id="controls">
+    <div id="pad" class="pad"><div id="stick" class="stick"></div></div>
+    <div class="buttons">
+      <button data-action="vacuum">VAC</button>
+      <button data-action="jump">JUMP</button>
+      <button data-action="melee">HIT</button>
+      <button data-action="sprint">RUN</button>
+      <button data-action="shoot">SHOT</button>
+      <button data-action="camera">CAM</button>
+    </div>
   </div>
+  <script src="./digital-breakdown.js"></script>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const status = document.getElementById('status');
+    const pad = document.getElementById('pad');
+    const stick = document.getElementById('stick');
+    const state = { moveX: 0, moveZ: 0, lookX: 0, lookY: 0, vacuum: 0, sprint: 0, jump: 0, melee: 0, shoot: 0, camera: 0 };
+    const androidKeys = { KeyW:51, KeyA:29, KeyS:47, KeyD:32, KeyQ:45, KeyC:31, KeyF:34, ShiftLeft:59, ShiftRight:60, Space:62 };
+    let api = null;
+    let last = performance.now();
+    let lookPointer = null;
+    let lookX = 0;
+    let lookY = 0;
+    let padPointer = null;
 
-  <div id="actions">
-    <button class="ctrl" id="jump">JMP</button>
-    <button class="ctrl" id="vacuum">VAC</button>
-    <button class="ctrl" id="shoot">ATK</button>
-  </div>
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.round(innerWidth * dpr));
+      const height = Math.max(1, Math.round(innerHeight * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        if (api) api.resize(width, height);
+      }
+    }
 
-  <script src="./android-bundle.js"></script>
+    function sendControls() {
+      if (!api) return;
+      api.touch(state.moveX, state.moveZ, state.lookX, state.lookY, state.vacuum, state.sprint, state.jump, state.melee, state.shoot, state.camera);
+      state.lookX = state.lookY = 0;
+      state.jump = state.melee = state.shoot = state.camera = 0;
+    }
+
+    function frame(now) {
+      resize();
+      const dt = Math.min((now - last) / 1000, 0.033);
+      last = now;
+      sendControls();
+      if (api) api.frame(dt);
+      requestAnimationFrame(frame);
+    }
+
+    addEventListener('keydown', event => {
+      const code = androidKeys[event.code];
+      if (code !== undefined && api) { event.preventDefault(); api.key(code, 1); }
+    });
+    addEventListener('keyup', event => {
+      const code = androidKeys[event.code];
+      if (code !== undefined && api) { event.preventDefault(); api.key(code, 0); }
+    });
+
+    canvas.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse' && event.button === 0) state.vacuum = 1;
+      lookPointer = event.pointerId;
+      lookX = event.clientX;
+      lookY = event.clientY;
+      canvas.setPointerCapture(event.pointerId);
+      canvas.focus();
+    });
+    canvas.addEventListener('pointermove', event => {
+      if (event.pointerId !== lookPointer) return;
+      state.lookX += event.clientX - lookX;
+      state.lookY += event.clientY - lookY;
+      lookX = event.clientX;
+      lookY = event.clientY;
+    });
+    canvas.addEventListener('pointerup', event => {
+      if (event.pointerId === lookPointer) lookPointer = null;
+      if (event.pointerType === 'mouse' && event.button === 0) state.vacuum = 0;
+    });
+    canvas.addEventListener('contextmenu', event => event.preventDefault());
+
+    function updatePad(event) {
+      const r = pad.getBoundingClientRect();
+      const x = Math.max(-1, Math.min(1, (event.clientX - (r.left + r.width / 2)) / (r.width * .38)));
+      const y = Math.max(-1, Math.min(1, (event.clientY - (r.top + r.height / 2)) / (r.height * .38)));
+      state.moveX = x;
+      state.moveZ = -y;
+      stick.style.transform = `translate(${x * 38}px, ${y * 38}px)`;
+    }
+    pad.addEventListener('pointerdown', event => { padPointer = event.pointerId; pad.setPointerCapture(event.pointerId); updatePad(event); });
+    pad.addEventListener('pointermove', event => { if (event.pointerId === padPointer) updatePad(event); });
+    pad.addEventListener('pointerup', event => { if (event.pointerId === padPointer) { padPointer = null; state.moveX = state.moveZ = 0; stick.style.transform = ''; } });
+
+    document.querySelectorAll('button[data-action]').forEach(button => {
+      const action = button.dataset.action;
+      const held = action === 'vacuum' || action === 'sprint';
+      button.addEventListener('pointerdown', event => { event.preventDefault(); state[action] = 1; button.classList.add('active'); button.setPointerCapture(event.pointerId); });
+      const release = () => { if (held) state[action] = 0; button.classList.remove('active'); };
+      button.addEventListener('pointerup', release);
+      button.addEventListener('pointercancel', release);
+    });
+
+    createDigitalBreakdown({ canvas }).then(Module => {
+      api = {
+        init: Module.cwrap('db_init', 'number', ['string']),
+        resize: Module.cwrap('db_resize', null, ['number','number']),
+        frame: Module.cwrap('db_frame', null, ['number']),
+        key: Module.cwrap('db_key', null, ['number','number']),
+        touch: Module.cwrap('db_touch_controls', null, ['number','number','number','number','number','number','number','number','number','number']),
+        commit: Module.cwrap('db_source_commit', 'string', [])
+      };
+      if (!api.init('#canvas')) throw new Error('WebGL context creation failed');
+      resize();
+      status.textContent = `NATIVE C++ · ${api.commit().slice(0, 12)} · WASD / SHIFT / SPACE / F / Q / C`;
+    }).catch(error => {
+      console.error(error);
+      status.textContent = `NATIVE BUILD FAILED: ${error.message}`;
+    });
+
+    addEventListener('resize', resize);
+    requestAnimationFrame(frame);
+  </script>
 </body>
 </html>
-
