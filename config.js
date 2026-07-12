@@ -1,16 +1,18 @@
 window.DIGITAL_BREAKDOWN_DEV_CONFIG = Object.freeze({
-  controlVersion: "0.4.0",
+  controlVersion: "0.5.0",
   owner: "indrolend",
   gameRepository: "digital-breakdown-apk",
   portalRepository: "Digital-breakdown-dev",
   authoritativeBranch: "main",
 
   playWebUrl: "./play/",
+  referenceWebUrl: "./reference/",
   manifestUrl: "./build-info.json",
 
   downloads: {
     android: "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-dev/DigitalBreakdown-Android.apk",
-    web: "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-dev/DigitalBreakdown-Web.zip",
+    web: "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-dev/DigitalBreakdown-Native-Web.zip",
+    reference: "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-dev/DigitalBreakdown-Reference-Web.zip",
     research: "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-dev/DigitalBreakdown-Research.zip"
   },
 
