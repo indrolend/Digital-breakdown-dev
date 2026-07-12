@@ -2,10 +2,7 @@
   "use strict";
 
   const config = window.DIGITAL_BREAKDOWN_DEV_CONFIG;
-  if (!config) {
-    document.body.innerHTML = "<pre>Missing config.js</pre>";
-    return;
-  }
+  if (!config) { document.body.innerHTML = "<pre>Missing config.js</pre>"; return; }
 
   const $ = (id) => document.getElementById(id);
   const setHref = (id, href) => { const el = $(id); if (el) el.href = href; };
@@ -27,21 +24,17 @@
   }
 
   function updateClock() {
-    $("clock").textContent = new Date().toLocaleTimeString([], {
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
-    });
+    $("clock").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
 
   function describeDevice() {
     const ua = navigator.userAgent;
     if (/Android/i.test(ua)) {
-      $("device-note").textContent = "Android detected. Download the APK to install the latest published native build.";
+      $("device-note").textContent = "Android detected. The APK and native WebAssembly build are produced from the same C++ commit.";
       $("download-android").classList.add("device-primary");
-    } else if (/iPad|iPhone|iPod/i.test(ua)) {
-      $("device-note").textContent = "iOS detected. Use PLAY WEB for the current published browser build.";
-      $("play-web").classList.add("device-primary");
     } else {
-      $("device-note").textContent = "Play the current web build immediately or download the latest Android APK.";
+      $("device-note").textContent = "PLAY NATIVE WEB runs the Android-equivalent C++ runtime. PLAY JS REFERENCE opens the behavioral source of truth.";
+      $("play-web").classList.add("device-primary");
     }
   }
 
@@ -63,6 +56,7 @@
     const published = Boolean(manifest.commit);
     const androidAvailable = Boolean(manifest.android?.available);
     const webAvailable = Boolean(manifest.web?.available);
+    const referenceAvailable = Boolean(manifest.reference?.available);
 
     $("source-commit").textContent = manifest.shortCommit || manifest.commit?.slice(0, 7) || "--";
     $("branch-name").textContent = manifest.branch || config.authoritativeBranch;
@@ -75,12 +69,16 @@
 
     setAvailability("download-android", androidAvailable);
     setAvailability("play-web", webAvailable);
+    setAvailability("download-web", webAvailable);
+    setAvailability("play-reference", referenceAvailable);
+    setAvailability("download-reference", referenceAvailable);
 
     if (manifest.shortCommit) {
       $("android-detail").textContent = `APK · ${manifest.shortCommit}`;
-      $("web-detail").textContent = `ZIP · ${manifest.shortCommit}`;
+      $("web-detail").textContent = `WASM ZIP · ${manifest.shortCommit}`;
       $("research-detail").textContent = `ZIP · ${manifest.shortCommit}`;
-      $("play-detail").textContent = `PUBLISHED ${manifest.shortCommit}`;
+      $("play-detail").textContent = `NATIVE C++ · ${manifest.shortCommit}`;
+      $("reference-detail").textContent = `JAVASCRIPT REFERENCE · ${manifest.shortCommit}`;
       $("source-detail").textContent = manifest.shortCommit;
       $("copy-detail").textContent = manifest.shortCommit;
     }
@@ -106,22 +104,19 @@
   async function copyBuildId(event) {
     event.preventDefault();
     const value = currentManifest?.commit;
-    if (!value) {
-      $("copy-detail").textContent = "NO BUILD";
-      return;
-    }
+    if (!value) { $("copy-detail").textContent = "NO BUILD"; return; }
     try {
       await navigator.clipboard.writeText(value);
       $("copy-detail").textContent = "COPIED";
       setTimeout(() => { $("copy-detail").textContent = currentManifest?.shortCommit || value.slice(0, 7); }, 1200);
-    } catch {
-      window.prompt("Build commit SHA", value);
-    }
+    } catch { window.prompt("Build commit SHA", value); }
   }
 
   setHref("play-web", config.playWebUrl);
+  setHref("play-reference", config.referenceWebUrl);
   setHref("download-android", config.downloads.android);
   setHref("download-web", config.downloads.web);
+  setHref("download-reference", config.downloads.reference);
   setHref("download-research", config.downloads.research);
   setHref("game-repo", config.urls.repository);
   setHref("publish-latest", config.urls.publishPortal);
