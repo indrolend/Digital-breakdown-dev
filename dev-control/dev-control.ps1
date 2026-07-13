@@ -12,7 +12,7 @@ $ConfigPath = Join-Path $StateRoot 'workspace.txt'
 
 New-Item -ItemType Directory -Force -Path $StateRoot, $DownloadDir | Out-Null
 
-function Pause-Control { Read-Host "`nPress Enter to return to Dev Control" | Out-Null }
+function Pause-Control { Read-Host "`nPress Enter to return" | Out-Null }
 function Has-Command([string]$Name) { return [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Open-Url([string]$Url) { Start-Process $Url }
 
@@ -40,7 +40,6 @@ function Get-Workspace {
         $saved = (Get-Content $ConfigPath -Raw).Trim()
         if ($saved -and (Test-Path (Join-Path $saved '.git'))) { return $saved }
     }
-
     $candidates = @(
         $Workspace,
         (Join-Path $env:USERPROFILE 'Downloads\digital-breakdown-apk'),
@@ -60,11 +59,10 @@ function Ensure-Workspace {
     $repo = Get-Workspace
     if ($repo) { return $repo }
     if (-not (Has-Command git)) { throw 'Git is required to retrieve the private source repository.' }
-    Write-Host "`nNo source checkout was found. Creating managed workspace:" -ForegroundColor Yellow
-    Write-Host $Workspace
+    Write-Host "`nRetrieving the project from GitHub..." -ForegroundColor Cyan
     New-Item -ItemType Directory -Force -Path (Split-Path $Workspace) | Out-Null
     & git clone 'https://github.com/indrolend/digital-breakdown-apk.git' $Workspace
-    if ($LASTEXITCODE -ne 0) { throw 'Repository clone failed. GitHub may need you to sign in through Git Credential Manager.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Repository download failed. GitHub may need you to sign in once.' }
     Set-Content -Path $ConfigPath -Value $Workspace
     return $Workspace
 }
@@ -73,91 +71,102 @@ function Get-Device {
     $adb = Resolve-Adb
     if (-not $adb) { throw 'ADB was not found. Install Android platform-tools or Android Studio.' }
     $lines = & $adb devices
+    $unauthorized = @($lines | Select-Object -Skip 1 | Where-Object { $_ -match "\tunauthorized$" })
+    if ($unauthorized.Count -gt 0) { throw 'Unlock the phone and approve the USB debugging prompt.' }
     $devices = @($lines | Select-Object -Skip 1 | Where-Object { $_ -match "\tdevice$" })
-    if ($devices.Count -eq 0) { throw 'No authorized Android device is connected. Unlock the Stylo 4 and approve USB debugging.' }
-    if ($devices.Count -gt 1) { throw 'More than one authorized Android device is connected.' }
+    if ($devices.Count -eq 0) { throw 'Connect the Stylo 4 with USB debugging enabled.' }
+    if ($devices.Count -gt 1) { throw 'More than one Android device is connected.' }
     return @{ Adb = $adb; Serial = ($devices[0] -split "\t")[0] }
+}
+
+function Get-PublishedManifest {
+    return Invoke-RestMethod -Uri ("$ManifestUrl?t=" + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -UseBasicParsing
 }
 
 function Show-Status {
     Clear-Host
-    Write-Host 'DIGITAL BREAKDOWN DEV CONTROL' -ForegroundColor Green
-    Write-Host '=============================' -ForegroundColor Green
-    $repo = Get-Workspace
-    $adb = Resolve-Adb
-    $scrcpy = Resolve-Scrcpy
-    Write-Host ("Workspace : " + $(if ($repo) { $repo } else { 'not retrieved' }))
-    Write-Host ("Git       : " + $(if (Has-Command git) { 'ready' } else { 'missing' }))
-    Write-Host ("ADB       : " + $(if ($adb) { $adb } else { 'missing' }))
-    Write-Host ("scrcpy    : " + $(if ($scrcpy) { $scrcpy } else { 'missing' }))
+    Write-Host 'DIGITAL BREAKDOWN' -ForegroundColor Green
+    Write-Host 'DEV CONTROL' -ForegroundColor Green
+    Write-Host '-----------' -ForegroundColor DarkGreen
+
     try {
-        $manifest = Invoke-RestMethod -Uri ("$ManifestUrl?t=" + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -UseBasicParsing
-        Write-Host ("Published : " + $manifest.shortCommit)
-        Write-Host ("Built     : " + $manifest.builtAt)
-    } catch { Write-Host 'Published : unavailable' -ForegroundColor Yellow }
-    if ($repo) {
-        Push-Location $repo
-        try {
-            $branch = (& git branch --show-current).Trim()
-            $commit = (& git rev-parse --short HEAD).Trim()
-            $dirty = [bool](& git status --porcelain)
-            Write-Host ("Local     : $commit" + $(if ($dirty) { '-dirty' } else { '' }) + " ($branch)")
-        } finally { Pop-Location }
+        $manifest = Get-PublishedManifest
+        Write-Host "Latest build : $($manifest.shortCommit)  READY"
+    } catch {
+        Write-Host 'Latest build : unavailable' -ForegroundColor Yellow
     }
+
     try {
         $device = Get-Device
         $model = (& $device.Adb -s $device.Serial shell getprop ro.product.model).Trim()
-        Write-Host "Device    : $model ($($device.Serial))" -ForegroundColor Cyan
-    } catch { Write-Host ("Device    : " + $_.Exception.Message) -ForegroundColor Yellow }
+        Write-Host "Phone        : $model  CONNECTED" -ForegroundColor Cyan
+    } catch {
+        Write-Host 'Phone        : not connected' -ForegroundColor Yellow
+    }
+
+    $repo = Get-Workspace
+    if ($repo) {
+        Push-Location $repo
+        try {
+            $commit = (& git rev-parse --short HEAD).Trim()
+            $dirty = [bool](& git status --porcelain)
+            Write-Host ("Source       : $commit" + $(if ($dirty) { '-dirty' } else { '' }))
+        } finally { Pop-Location }
+    } else {
+        Write-Host 'Source       : retrieved automatically when needed'
+    }
 }
 
 function Sync-Source {
     $repo = Ensure-Workspace
     Push-Location $repo
     try {
-        Write-Host "`nChecking source continuity..." -ForegroundColor Cyan
         $dirty = [bool](& git status --porcelain)
         if ($dirty) {
-            Write-Host 'Local changes exist. Source was not pulled automatically.' -ForegroundColor Yellow
+            Write-Host 'Local changes exist, so they were preserved without pulling.' -ForegroundColor Yellow
             & git status --short --branch
             return
         }
+        Write-Host "`nUpdating source from GitHub..." -ForegroundColor Cyan
         & git fetch origin main
         if ($LASTEXITCODE -ne 0) { throw 'Git fetch failed.' }
         & git checkout main
         if ($LASTEXITCODE -ne 0) { throw 'Could not switch to main.' }
         & git pull --ff-only origin main
-        if ($LASTEXITCODE -ne 0) { throw 'Fast-forward pull failed.' }
-        Write-Host 'Source is synchronized with GitHub main.' -ForegroundColor Green
+        if ($LASTEXITCODE -ne 0) { throw 'Source update failed.' }
     } finally { Pop-Location }
 }
 
 function Deploy-Published {
     $device = Get-Device
-    $manifest = Invoke-RestMethod -Uri ("$ManifestUrl?t=" + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -UseBasicParsing
+    $manifest = Get-PublishedManifest
     if (-not $manifest.commit) { throw 'No completed published build is available.' }
     $apk = Join-Path $DownloadDir ("DigitalBreakdown-Android-" + $manifest.shortCommit + '.apk')
-    Write-Host "`nDownloading published APK $($manifest.shortCommit)..." -ForegroundColor Cyan
+    Write-Host "`nInstalling completed build $($manifest.shortCommit)..." -ForegroundColor Cyan
     Invoke-WebRequest -Uri $PublishedApkUrl -OutFile $apk -UseBasicParsing
     if ($manifest.android.sha256) {
         $actual = (Get-FileHash $apk -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($actual -ne $manifest.android.sha256.ToLowerInvariant()) { throw 'Downloaded APK checksum does not match build-info.json.' }
-        Write-Host 'Checksum verified.' -ForegroundColor Green
+        if ($actual -ne $manifest.android.sha256.ToLowerInvariant()) { throw 'The APK checksum did not match the published build.' }
     }
     & $device.Adb -s $device.Serial install -r $apk
-    if ($LASTEXITCODE -ne 0) { throw 'APK replacement failed. A signature mismatch may require one deliberate uninstall.' }
-    & $device.Adb -s $device.Serial shell am force-stop $AppId
-    & $device.Adb -s $device.Serial shell am start -n "$AppId/$Activity"
-    Write-Host "Published build $($manifest.shortCommit) installed and launched." -ForegroundColor Green
+    if ($LASTEXITCODE -ne 0) { throw 'APK replacement failed. The installed copy may use a different signing key.' }
+    & $device.Adb -s $device.Serial shell am force-stop $AppId | Out-Null
+    & $device.Adb -s $device.Serial shell am start -n "$AppId/$Activity" | Out-Null
+    Write-Host "Build $($manifest.shortCommit) is running on the phone." -ForegroundColor Green
 }
 
 function Build-Deploy-Local {
     $repo = Ensure-Workspace
     $device = Get-Device
     $script = Join-Path $repo 'tools\device\deploy-local.ps1'
-    if (-not (Test-Path $script)) { throw 'deploy-local.ps1 is missing. Run Sync source first.' }
+    if (-not (Test-Path $script)) { throw 'Local deployment tooling is missing after source synchronization.' }
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -NoMirror -NoLogs
-    if ($LASTEXITCODE -ne 0) { throw 'Local build/deploy failed.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Local build and installation failed.' }
+}
+
+function Continue-Development {
+    Sync-Source
+    Build-Deploy-Local
 }
 
 function Start-Mirror {
@@ -180,28 +189,25 @@ function Open-Workspace {
 
 while ($true) {
     Show-Status
-    Write-Host "`n 1) INSTALL LATEST PUBLISHED + LAUNCH"
-    Write-Host ' 2) SYNC SOURCE FROM GITHUB'
-    Write-Host ' 3) BUILD LOCAL + INSTALL + LAUNCH'
-    Write-Host ' 4) MIRROR STYLO 4'
-    Write-Host ' 5) NATIVE LOGS'
-    Write-Host ' 6) OPEN DEV PORTAL'
-    Write-Host ' 7) OPEN MANAGED SOURCE FOLDER'
-    Write-Host ' 8) REFRESH STATUS'
+    Write-Host "`nWHAT ARE YOU DOING?" -ForegroundColor DarkGreen
+    Write-Host ' 1) TEST LATEST BUILD ON STYLO 4'
+    Write-Host ' 2) CONTINUE NATIVE DEVELOPMENT'
+    Write-Host ' 3) MIRROR PHONE'
+    Write-Host ' 4) VIEW NATIVE LOGS'
+    Write-Host ' 5) OPEN DEV WEBSITE'
+    Write-Host ' 6) OPEN SOURCE FOLDER'
     Write-Host ' 0) EXIT'
     $choice = Read-Host "`nSelect"
     try {
         switch ($choice) {
             '1' { Deploy-Published; Start-Mirror; Start-Logs; Pause-Control }
-            '2' { Sync-Source; Pause-Control }
-            '3' { Build-Deploy-Local; Start-Mirror; Start-Logs; Pause-Control }
-            '4' { Start-Mirror; Pause-Control }
-            '5' { Start-Logs; Pause-Control }
-            '6' { Open-Url $Portal }
-            '7' { Open-Workspace }
-            '8' { continue }
+            '2' { Continue-Development; Start-Mirror; Start-Logs; Pause-Control }
+            '3' { Start-Mirror; Pause-Control }
+            '4' { Start-Logs; Pause-Control }
+            '5' { Open-Url $Portal }
+            '6' { Open-Workspace }
             '0' { break }
-            default { Write-Host 'Unknown selection.' -ForegroundColor Yellow; Pause-Control }
+            default { Write-Host 'Choose a number shown in the menu.' -ForegroundColor Yellow; Pause-Control }
         }
     } catch {
         Write-Host "`nERROR: $($_.Exception.Message)" -ForegroundColor Red
