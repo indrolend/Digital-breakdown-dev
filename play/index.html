@@ -67,13 +67,19 @@
       state.jump = state.melee = state.shoot = state.camera = 0;
     }
 
+    const presentationStepMs = 1000 / 60;
+    let nextPresentation = 0;
+
     function frame(now) {
+      requestAnimationFrame(frame);
+      if (!nextPresentation) nextPresentation = now;
+      if (now < nextPresentation) return;
+      do { nextPresentation += presentationStepMs; } while (nextPresentation <= now);
       resize();
-      const dt = Math.min((now - last) / 1000, 0.033);
+      const dt = Math.min((now - last) / 1000, 0.25);
       last = now;
       sendControls();
       if (api) api.frame(dt);
-      requestAnimationFrame(frame);
     }
 
     addEventListener('keydown', event => {
