@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07110a">
   <meta name="description" content="Install, test, and inspect Digital Breakdown development builds.">
+  <meta name="application-name" content="DATA by indrolend">
+  <meta name="keywords" content="DATA, Digital Breakdown, DigitalBreakdown, indrolend, game download">
   <title>Digital Breakdown Dev</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
@@ -20,6 +22,14 @@
       <div><span>BUILD</span><strong id="source-commit">--</strong></div>
       <div><span>UPDATED</span><strong id="built-at">--</strong></div>
       <div><span>STATUS</span><strong id="manifest-status">CHECKING</strong></div>
+    </section>
+
+    <section class="workflow">
+      <h2>GET THE LATEST NATIVE GAME</h2>
+      <a class="action action-primary action-wide" href="./download/">
+        <span>DOWNLOAD DATA</span>
+        <small>Automatically resolves the latest verified Windows, Android, or macOS build</small>
+      </a>
     </section>
 
     <section class="workflow">
@@ -62,5 +72,17 @@
   </main>
   <script src="./config.js"></script>
   <script src="./app.js"></script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "@id": "https://indrolend.github.io/Digital-breakdown-dev/#data",
+      "name": "DATA",
+      "alternateName": ["Digital Breakdown", "DigitalBreakdown"],
+      "author": {"@type": "Person", "name": "indrolend"},
+      "downloadUrl": "https://indrolend.github.io/Digital-breakdown-dev/download/",
+      "gamePlatform": ["Windows", "Android", "macOS"]
+    }
+  </script>
 </body>
 </html>

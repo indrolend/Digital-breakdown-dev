@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Download the latest verified native version of DATA by indrolend for Windows, Android, or macOS.">
+  <title>Download DATA by indrolend</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">INDROLEND / DATA</p>
+    <h1>DOWNLOAD DATA</h1>
+    <p class="lede">The latest verified native build is resolved automatically from the canonical release manifest.</p>
+    <div class="platforms">
+      <a class="button" href="./windows/" data-platform-link="windows-x64"><strong>WINDOWS</strong><small>Checking latest build…</small></a>
+      <a class="button" href="./android/" data-platform-link="android-armeabi-v7a"><strong>ANDROID</strong><small>Checking latest build…</small></a>
+      <a class="button" href="./macos/" data-platform-link="macos-universal"><strong>MACOS</strong><small>Checking latest build…</small></a>
+    </div>
+    <p id="status" class="status" role="status">Reading canonical latest-native manifest…</p>
+    <noscript>JavaScript is required to resolve and validate the latest release.</noscript>
+  </main>
+  <script src="./resolver.js" data-manifest="../native-build-manifest.json"></script>
+</body>
+</html>
