@@ -633,7 +633,7 @@ function updateHud() {
   for (let i = 0; i < targets.length; i++) if (targets[i].alive) alive++;
 
   hud.textContent =
-    "DIGITAL BREAKDOWN / STYLO V2\n" +
+    "DATA / STYLO V2\n" +
     "FPS " + fps + "\n" +
     "ROOM " + roomIndex + (roomClear ? " CLEAR" : "") + "\n" +
     "BAT " + Math.round(player.battery) + "\n" +
