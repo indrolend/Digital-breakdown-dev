@@ -7,18 +7,18 @@
     "creator": "indrolend"
   },
   "repository": "indrolend/digital-breakdown-apk",
-  "commit": "6c837ef628dfc9be10b43b0f2248c9594a3c6652",
-  "shortCommit": "6c837ef",
+  "commit": "2486e73f33ebddca60e0f6ce3340cdd5dfc5099d",
+  "shortCommit": "2486e73",
   "channel": "latest-native",
-  "builtAt": "2026-08-16T16:43:54Z",
+  "builtAt": "2026-08-16T16:50:27Z",
   "workflow": "Native Cross-Platform Release",
-  "runId": "31959310479",
+  "runId": "31959666414",
   "artifacts": {
     "windows-x64": {
       "available": true,
       "filename": "DigitalBreakdown-Windows.zip",
       "portable": true,
-      "sha256": "b4ce0fc264ceb57ac1edc1167b014a8063ef23df5c48685a75023485f5dda0a9",
+      "sha256": "0c7350508c3e9cd9d327a64bb0429b810aaa8ddc065b8f35a4ce752210ee37f7",
       "url": "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-native/DigitalBreakdown-Windows.zip"
     },
     "android-armeabi-v7a": {
@@ -27,14 +27,14 @@
       "variant": "debug",
       "stableSigning": false,
       "architectures": ["armeabi-v7a", "arm64-v8a"],
-      "sha256": "1a181fd92d10555b3fbbdc76c767b9cacc838acdfb1a2516882141e1aa2a8cd3",
+      "sha256": "72d38a7aeab2a7f43eb1e4f1ffe18d59defaaf37f37c6fa72ae4b336141226bd",
       "url": "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-native/DigitalBreakdown-Android.apk"
     },
     "macos-universal": {
       "available": true,
       "filename": "DigitalBreakdown-macOS-Universal.zip",
       "architectures": ["x86_64", "arm64"],
-      "sha256": "1ed1c0e610aba9461ad733f4cd179b994c3a56f704598ddf881883ef1835a581",
+      "sha256": "5667b99a936bc2f5dd22e16755002bc964bbf863d0f542b29b2cd17ab1d66043",
       "url": "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-native/DigitalBreakdown-macOS-Universal.zip"
     }
   },
@@ -44,7 +44,7 @@
     "configuration": "Release",
     "portable": true,
     "url": "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-native/DigitalBreakdown-Windows.zip",
-    "sha256": "b4ce0fc264ceb57ac1edc1167b014a8063ef23df5c48685a75023485f5dda0a9"
+    "sha256": "0c7350508c3e9cd9d327a64bb0429b810aaa8ddc065b8f35a4ce752210ee37f7"
   },
   "android": {
     "available": true,
@@ -54,12 +54,12 @@
     "stableSigning": false,
     "applicationId": "com.indrolend.digitalbreakdown.native",
     "url": "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-native/DigitalBreakdown-Android.apk",
-    "sha256": "1a181fd92d10555b3fbbdc76c767b9cacc838acdfb1a2516882141e1aa2a8cd3"
+    "sha256": "72d38a7aeab2a7f43eb1e4f1ffe18d59defaaf37f37c6fa72ae4b336141226bd"
   },
   "macos": {
     "available": true,
     "architectures": ["x86_64", "arm64"],
     "url": "https://github.com/indrolend/Digital-breakdown-dev/releases/download/latest-native/DigitalBreakdown-macOS-Universal.zip",
-    "sha256": "1ed1c0e610aba9461ad733f4cd179b994c3a56f704598ddf881883ef1835a581"
+    "sha256": "5667b99a936bc2f5dd22e16755002bc964bbf863d0f542b29b2cd17ab1d66043"
   }
 }
