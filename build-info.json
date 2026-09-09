@@ -2,25 +2,25 @@
   "schemaVersion": 2,
   "repository": "indrolend/digital-breakdown-apk",
   "branch": "main",
-  "commit": "6c32c93e225261cb62b539fed77e7ecde1e62bb6",
-  "shortCommit": "6c32c93",
-  "builtAt": "2026-09-09T21:20:10.314948+00:00",
+  "commit": "1188609cb064c2d525a5aee01b0ad8d318718127",
+  "shortCommit": "1188609",
+  "builtAt": "2026-09-09T22:46:56.608951+00:00",
   "workflow": "Publish Dev Portal",
-  "runId": "34406149122",
+  "runId": "34413725381",
   "sourceMessage": "Android APK and native WebAssembly runtime were built from the same native commit.",
   "android": {
     "available": true,
     "filename": "DigitalBreakdown-Android.apk",
-    "size": 11043122,
-    "sha256": "a6a34e47d3155a3c127b75e5d215de07791a47da869137efe0babfab17c0d7b1",
+    "size": 11043994,
+    "sha256": "f4abcf74e441701a5bd409d3f39bf6643a0bb81745d2c3af5dedd74a5522b807",
     "variant": "debug",
     "stableSigning": false
   },
   "web": {
     "available": true,
     "filename": "DigitalBreakdown-Native-Web.zip",
-    "size": 202318,
-    "sha256": "14bb6716cb3979ee9e107b9da8b5ec0f786868a966f7bd15b0c3bbaa51b44739",
+    "size": 202787,
+    "sha256": "259531b1b6439bda0357df0a127d9690222a840a0d3c171d15c848787c5bf285",
     "runtime": "native-cpp-wasm",
     "playPath": "./play/"
   },
@@ -28,14 +28,14 @@
     "available": true,
     "filename": "DigitalBreakdown-Reference-Web.zip",
     "size": 46925,
-    "sha256": "5cd011972b4e4afdab1fd6c4d0afeeac320811ee21da90e632b993c32dbc0030",
+    "sha256": "6ec7d42e4e3ec121044cb2cb8f06c3ec42d53674f5f92026ebd9afbfd7bc9b84",
     "runtime": "javascript-reference",
     "playPath": "./reference/"
   },
   "research": {
     "available": true,
     "filename": "DigitalBreakdown-Research.zip",
-    "size": 195205,
-    "sha256": "65b4eb93f9ce17667d87e891577e34eff37aebb94c03176e3e2a279651319dca"
+    "size": 195946,
+    "sha256": "a1289633558c7b252b0dd4e7bcd97c667c2dc4fa026afff8656b11eeef0e1e98"
   }
 }
